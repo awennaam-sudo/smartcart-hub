@@ -153,11 +153,7 @@ export function LoginPage() {
             <button className="btn btn-gold" type="submit" disabled={loading} style={{ width: '100%', padding: '13px' }}>{loading ? 'Signing in...' : 'Sign in →'}</button>
           </form>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text3)' }}>No account? <a href="/register" style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>Create one</a></p>
-          <div style={{ marginTop: 20, padding: '12px 16px', background: 'var(--bg2)', borderRadius: 'var(--radius)', border: '1px solid var(--border)', fontSize: 12, color: 'var(--text3)' }}>
-            <div style={{ marginBottom: 4, fontWeight: 600 }}>Demo accounts:</div>
-            <div>admin@smartcarthub.com / admin123</div>
-            <div>jane@example.com / password123</div>
-          </div>
+          
         </div>
       </div>
     </div>
