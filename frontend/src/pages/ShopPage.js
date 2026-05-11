@@ -13,7 +13,7 @@ export default function ShopPage() {
   const sort = searchParams.get('sort') || '';
   const search = searchParams.get('search') || '';
 
-  useEffect(() => { fetch(`${API}/api/products/categories').then(r => r.json()).then(setCategories); }, []);
+  useEffect(() => { fetch(`${API}/api/products/categories`).then(r => r.json()).then(setCategories); }, []);
 
   useEffect(() => {
     setLoading(true);

@@ -46,8 +46,8 @@ export default function AdminDashboard() {
   const loadAll = async () => {
     setLoading(true);
     const [s, p, o] = await Promise.all([
-      fetch(`${API}/api/stats').then(r => r.json()),
-      fetch(`${API}/api/products').then(r => r.json()),
+      fetch(`${API}/api/stats`).then(r => r.json()),
+      fetch(`${API}/api/products`).then(r => r.json()),
       authFetch('/api/orders').then(r => r.json()),
     ]);
     setStats(s);
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
   };
 
-  const loadStats = () => fetch(`${API}/api/stats').then(r => r.json()).then(setStats);
+  const loadStats = () => fetch(`${API}/api/stats`).then(r => r.json()).then(setStats);
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
