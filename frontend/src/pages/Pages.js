@@ -19,7 +19,7 @@ export function CheckoutPage() {
   const handleOrder = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
     try {
-      const res = await authFetch('/api/orders', { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment }) });
+      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       clearCart(); navigate('/orders', { state: { newOrder: data } });
@@ -51,7 +51,7 @@ export function CheckoutPage() {
           </div>
           {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
           <button className="btn btn-gold" type="submit" disabled={loading || items.length === 0} style={{ width: '100%', padding: '14px', fontSize: 15 }}>
-            {loading ? 'Placing order...' : `Place Order — $${(total + shipping).toFixed(2)}`}
+            {loading ? 'Placing order...' : `Place Order — ₵${(total + shipping).toFixed(2)}`}
           </button>
         </form>
 
@@ -63,15 +63,15 @@ export function CheckoutPage() {
               <img src={i.image} alt={i.name} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border)' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{i.name}</div>
-                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Qty: {i.quantity} × ${i.price.toFixed(2)}</div>
+                <div style={{ fontSize: 12, color: 'var(--text3)' }}>Qty: {i.quantity} × ₵{i.price.toFixed(2)}</div>
               </div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gold)' }}>${(i.price * i.quantity).toFixed(2)}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--gold)' }}>₵{(i.price * i.quantity).toFixed(2)}</div>
             </div>
           ))}
           <div className="gold-line" />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}><span style={{ color: 'var(--text3)' }}>Subtotal</span><span>${total.toFixed(2)}</span></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 14 }}><span style={{ color: 'var(--text3)' }}>Shipping</span><span style={{ color: 'var(--green)' }}>{shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 16 }}>Total</span><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 20, color: 'var(--gold)' }}>${(total + shipping).toFixed(2)}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 16 }}>Total</span><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 20, color: 'var(--gold)' }}>₵{(total + shipping).toFixed(2)}</span></div>
         </div>
       </div>
     </div>
@@ -82,7 +82,7 @@ export function CheckoutPage() {
 export function OrdersPage() {
   const { authFetch } = useAuth();
   const [orders, setOrders] = React.useState([]);
-  React.useEffect(() => { authFetch('/api/orders/mine').then(r => r.json()).then(d => Array.isArray(d) && setOrders(d)); }, []);
+  React.useEffect(() => { authFetch(`${API}/api/orders/mine`).then(r => r.json()).then(d => Array.isArray(d) && setOrders(d)); }, []);
   const statusColor = { pending: 'badge-gold', processing: 'badge-gold', shipped: 'badge-green', delivered: 'badge-green', cancelled: 'badge-red' };
 
   return (
@@ -103,7 +103,7 @@ export function OrdersPage() {
             </div>
             <div style={{ textAlign: 'right' }}>
               <span className={`badge ${statusColor[o.status] || 'badge-gold'}`} style={{ marginBottom: 6, display: 'block' }}>{o.status}</span>
-              <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>${o.total.toFixed(2)}</div>
+              <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>₵{o.total.toFixed(2)}</div>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -211,7 +211,7 @@ export function AdminPage() {
 
   React.useEffect(() => {
     fetch(`${API}/api/stats`).then(r => r.json()).then(setStats);
-    authFetch('/api/orders').then(r => r.json()).then(d => Array.isArray(d) && setOrders(d));
+    authFetch(`${API}/api/orders`).then(r => r.json()).then(d => Array.isArray(d) && setOrders(d));
     fetch(`${API}/api/products`).then(r => r.json()).then(setProducts);
   }, []);
 
