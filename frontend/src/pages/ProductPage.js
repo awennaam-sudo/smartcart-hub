@@ -1,3 +1,4 @@
+import API from '../api';
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
@@ -11,7 +12,7 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
 
-  useEffect(() => { fetch(`/api/products/${id}`).then(r => r.json()).then(d => { if (d.message) navigate('/shop'); else setProduct(d); }); }, [id]);
+  useEffect(() => { fetch(`${API}/api/products/${id}`).then(r => r.json()).then(d => { if (d.message) navigate('/shop'); else setProduct(d); }); }, [id]);
 
   if (!product) return <div style={{ textAlign: 'center', padding: 120, color: 'var(--text3)', fontFamily: 'var(--serif)', fontStyle: 'italic' }}>Loading...</div>;
 

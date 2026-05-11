@@ -1,3 +1,4 @@
+import API from '../api';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -5,7 +6,7 @@ import ProductCard from '../components/ProductCard';
 export default function HomePage() {
   const [featured, setFeatured] = useState([]);
 
-  useEffect(() => { fetch('/api/products?featured=true').then(r => r.json()).then(setFeatured); }, []);
+  useEffect(() => { fetch(`${API}/api/products?featured=true').then(r => r.json()).then(setFeatured); }, []);
 
   return (
     <div>

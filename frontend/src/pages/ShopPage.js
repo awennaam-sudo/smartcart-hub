@@ -1,3 +1,4 @@
+import API from '../api';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
@@ -12,7 +13,7 @@ export default function ShopPage() {
   const sort = searchParams.get('sort') || '';
   const search = searchParams.get('search') || '';
 
-  useEffect(() => { fetch('/api/products/categories').then(r => r.json()).then(setCategories); }, []);
+  useEffect(() => { fetch(`${API}/api/products/categories').then(r => r.json()).then(setCategories); }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -20,7 +21,7 @@ export default function ShopPage() {
     if (category !== 'All') params.set('category', category);
     if (sort) params.set('sort', sort);
     if (search) params.set('search', search);
-    fetch(`/api/products?${params}`).then(r => r.json()).then(d => { setProducts(d); setLoading(false); });
+    fetch(`${API}/api/products?${params}`).then(r => r.json()).then(d => { setProducts(d); setLoading(false); });
   }, [category, sort, search]);
 
   const set = (key, val) => setSearchParams(prev => { const p = new URLSearchParams(prev); if (val) p.set(key, val); else p.delete(key); return p; });

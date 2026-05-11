@@ -1,3 +1,4 @@
+import API from './api';
 import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext(null);
 
@@ -8,7 +9,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (token) {
-      fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      fetch(`${API}/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
         .then(r => r.json()).then(d => { if (d.id) setUser(d); else { setToken(null); localStorage.removeItem('sch_token'); } })
         .catch(() => { setToken(null); localStorage.removeItem('sch_token'); })
         .finally(() => setLoading(false));
@@ -16,14 +17,14 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const login = async (email, password) => {
-    const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+    const res = await fetch(`${API}/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     localStorage.setItem('sch_token', data.token); setToken(data.token); setUser(data.user); return data.user;
   };
 
   const register = async (name, email, password) => {
-    const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) });
+    const res = await fetch(`${API}/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, email, password }) });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message);
     localStorage.setItem('sch_token', data.token); setToken(data.token); setUser(data.user); return data.user;

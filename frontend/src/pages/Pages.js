@@ -1,3 +1,4 @@
+import API from '../api';
 // CheckoutPage
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -209,9 +210,9 @@ export function AdminPage() {
   const [tab, setTab] = useState('overview');
 
   React.useEffect(() => {
-    fetch('/api/stats').then(r => r.json()).then(setStats);
+    fetch(`${API}/api/stats').then(r => r.json()).then(setStats);
     authFetch('/api/orders').then(r => r.json()).then(d => Array.isArray(d) && setOrders(d));
-    fetch('/api/products').then(r => r.json()).then(setProducts);
+    fetch(`${API}/api/products').then(r => r.json()).then(setProducts);
   }, []);
 
   const updateStatus = async (id, status) => {
