@@ -29,11 +29,11 @@ export default function CartPage() {
         {/* Items */}
         <div>
           {items.map((item, i) => (
-            <div key={item.productId} style={{ display: 'flex', gap: 20, padding: '20px 0', borderBottom: '1px solid var(--border)', animation: `fadeUp 0.3s ${i * 0.05}s ease both` }}>
+            <div key={item.productId} style={{ display: 'flex', gap: 20, padding: '20px 0', borderBottom: '1px solid var(--border)', animation: `fadeUp 0.3s ₵{i * 0.05}s ease both` }}>
               <img src={item.image} alt={item.name} style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: 'var(--radius)', border: '1px solid var(--border)', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <h3 style={{ fontFamily: 'var(--serif)', fontSize: 16, fontWeight: 600, marginBottom: 6 }}>{item.name}</h3>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--gold)', fontWeight: 700, marginBottom: 12 }}>${item.price.toFixed(2)}</div>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: 18, color: 'var(--gold)', fontWeight: 700, marginBottom: 12 }}>₵{item.price.toFixed(2)}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                   <div className="qty-ctrl">
                     <button className="qty-btn" style={{ width: 30, height: 30 }} onClick={() => updateQty(item.productId, item.quantity - 1)}>−</button>
@@ -44,7 +44,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 700, color: 'var(--text)', textAlign: 'right', minWidth: 80 }}>
-                ${(item.price * item.quantity).toFixed(2)}
+                ₵{(item.price * item.quantity).toFixed(2)}
               </div>
             </div>
           ))}
@@ -62,7 +62,7 @@ export default function CartPage() {
           {items.map(item => (
             <div key={item.productId} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
               <span style={{ color: 'var(--text2)' }}>{item.name} × {item.quantity}</span>
-              <span>${(item.price * item.quantity).toFixed(2)}</span>
+              <span>₵{(item.price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
 
@@ -70,16 +70,16 @@ export default function CartPage() {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
             <span style={{ color: 'var(--text2)' }}>Subtotal</span>
-            <span>${total.toFixed(2)}</span>
+            <span>₵{total.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
             <span style={{ color: 'var(--text2)' }}>Shipping</span>
-            <span style={{ color: 'var(--green)' }}>{total >= 100 ? 'Free' : '$9.99'}</span>
+            <span style={{ color: 'var(--green)' }}>{total >= 100 ? 'Free' : '₵9.99'}</span>
           </div>
           <div className="gold-line" />
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 28 }}>
             <span style={{ fontFamily: 'var(--serif)', fontSize: 18, fontWeight: 700 }}>Total</span>
-            <span style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>${(total < 100 ? total + 9.99 : total).toFixed(2)}</span>
+            <span style={{ fontFamily: 'var(--serif)', fontSize: 22, fontWeight: 700, color: 'var(--gold)' }}>₵{(total < 100 ? total + 9.99 : total).toFixed(2)}</span>
           </div>
 
           <button className="btn btn-gold" style={{ width: '100%', padding: '14px', fontSize: 15 }}

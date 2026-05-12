@@ -12,13 +12,13 @@ export default function ProductPage() {
   const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(1);
 
-  useEffect(() => { fetch(`${API}/api/products/${id}`).then(r => r.json()).then(d => { if (d.message) navigate('/shop'); else setProduct(d); }); }, [id]);
+  useEffect(() => { fetch(`₵{API}/api/products/₵{id}`).then(r => r.json()).then(d => { if (d.message) navigate('/shop'); else setProduct(d); }); }, [id]);
 
   if (!product) return <div style={{ textAlign: 'center', padding: 120, color: 'var(--text3)', fontFamily: 'var(--serif)', fontStyle: 'italic' }}>Loading...</div>;
 
   const discount = product.originalPrice > product.price ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
 
-  const handleAdd = () => { addItem(product, qty); toast(`${product.name} added to cart ✓`); };
+  const handleAdd = () => { addItem(product, qty); toast(`₵{product.name} added to cart ✓`); };
 
   return (
     <div className="page">
@@ -49,9 +49,9 @@ export default function ProductPage() {
           <div className="gold-line" />
 
           <div style={{ marginBottom: 28 }}>
-            <span style={{ fontFamily: 'var(--serif)', fontSize: 38, fontWeight: 700, color: 'var(--gold)' }}>${product.price.toFixed(2)}</span>
+            <span style={{ fontFamily: 'var(--serif)', fontSize: 38, fontWeight: 700, color: 'var(--gold)' }}>₵{product.price.toFixed(2)}</span>
             {discount > 0 && (
-              <span style={{ marginLeft: 14, fontSize: 20, color: 'var(--text3)', textDecoration: 'line-through' }}>${product.originalPrice.toFixed(2)}</span>
+              <span style={{ marginLeft: 14, fontSize: 20, color: 'var(--text3)', textDecoration: 'line-through' }}>₵{product.originalPrice.toFixed(2)}</span>
             )}
             {discount > 0 && <span className="badge badge-red" style={{ marginLeft: 12 }}>Save {discount}%</span>}
           </div>
@@ -62,7 +62,7 @@ export default function ProductPage() {
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 13, color: product.stock > 10 ? 'var(--green)' : product.stock > 0 ? 'var(--gold)' : 'var(--red)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'currentColor' }} />
-              {product.stock > 10 ? `${product.stock} in stock` : product.stock > 0 ? `Only ${product.stock} left!` : 'Out of stock'}
+              {product.stock > 10 ? `₵{product.stock} in stock` : product.stock > 0 ? `Only ₵{product.stock} left!` : 'Out of stock'}
             </div>
           </div>
 
@@ -75,14 +75,14 @@ export default function ProductPage() {
                 <button className="qty-btn" onClick={() => setQty(q => Math.min(product.stock, q + 1))}>+</button>
               </div>
               <button className="btn btn-gold" style={{ flex: 1, padding: '13px' }} onClick={handleAdd}>
-                Add to cart — ${(product.price * qty).toFixed(2)}
+                Add to cart — ₵{(product.price * qty).toFixed(2)}
               </button>
             </div>
           )}
 
           {/* Info pills */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {['Free shipping over $100', '30-day returns', 'Authentic guarantee'].map(f => (
+            {['Free shipping over ₵100', '30-day returns', 'Authentic guarantee'].map(f => (
               <span key={f} style={{ fontSize: 12, color: 'var(--text3)', padding: '6px 14px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20 }}>✦ {f}</span>
             ))}
           </div>

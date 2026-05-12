@@ -13,11 +13,11 @@ export default function ProductCard({ product }) {
   const handleAdd = (e) => {
     e.stopPropagation();
     addItem(product, 1);
-    toast(`${product.name} added to cart ✓`);
+    toast(`₵{product.name} added to cart ✓`);
   };
 
   return (
-    <div className="product-card fade-in" onClick={() => navigate(`/product/${product.id}`)}>
+    <div className="product-card fade-in" onClick={() => navigate(`/product/₵{product.id}`)}>
       <div style={{ position: 'relative', overflow: 'hidden' }}>
         <img src={product.image} alt={product.name} loading="lazy" style={{ height: 260, objectFit: 'cover', width: '100%' }} />
         <div style={{ position: 'absolute', top: 12, left: 12, display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -40,8 +40,8 @@ export default function ProductCard({ product }) {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <span style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>${product.price.toFixed(2)}</span>
-            {discount > 0 && <span style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'line-through', marginLeft: 8 }}>${product.originalPrice.toFixed(2)}</span>}
+            <span style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>₵{product.price.toFixed(2)}</span>
+            {discount > 0 && <span style={{ fontSize: 13, color: 'var(--text3)', textDecoration: 'line-through', marginLeft: 8 }}>₵{product.originalPrice.toFixed(2)}</span>}
           </div>
           <button className="btn btn-gold btn-sm" onClick={handleAdd} disabled={product.stock === 0}>
             {product.stock === 0 ? 'Sold out' : '+ Add'}
