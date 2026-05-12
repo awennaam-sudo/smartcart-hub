@@ -24,7 +24,12 @@ export function CheckoutPage() {
       const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment, momoPhone, momoProvider }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-      clearCart(); navigate('/orders', { state: { newOrder: data } });
+      if (data.paymentUrl) {
+        clearCart();
+        window.location.href = data.paymentUrl;
+      } else {
+        clearCart(); navigate('/orders', { state: { newOrder: data } });
+      }
     } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
 

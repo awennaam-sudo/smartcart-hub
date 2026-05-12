@@ -33,6 +33,35 @@ function chargeMomo(email, amount, phone, provider) {
   });
 }
 
+function initializeCardPayment(email, amount, orderId, callbackUrl) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      email,
+      amount: Math.round(amount * 100),
+      currency: 'GHS',
+      reference: orderId,
+      callback_url: callbackUrl,
+    });
+    const options = {
+      hostname: 'api.paystack.co',
+      path: '/transaction/initialize',
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => resolve(JSON.parse(data)));
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
 router.post('/', requireAuth, async (req, res) => {
   const { items, shippingAddress, paymentMethod, momoPhone, momoProvider } = req.body;
   if (!items || items.length === 0) return res.status(400).json({ message: 'No items in order' });
@@ -78,6 +107,37 @@ router.post('/', requireAuth, async (req, res) => {
       return res.status(201).json({ ...order, paystackMessage: chargeRes.data?.display_text || 'Payment prompt sent to your phone. Please approve it.' });
     } catch (err) {
       return res.status(500).json({ message: 'Payment processing error', error: err.message });
+    }
+  }
+
+  if (paymentMethod === 'card') {
+    try {
+      const user = store.users.find(u => u.id === req.userId);
+      const orderId = uuidv4();
+      const callbackUrl = `${process.env.FRONTEND_URL}/orders`;
+      const initRes = await initializeCardPayment(user.email, total, orderId, callbackUrl);
+      if (!initRes.status) return res.status(400).json({ message: 'Card payment initiation failed.' });
+      for (const item of items) {
+        const product = store.products.find(p => p.id === item.productId);
+        product.stock -= item.quantity;
+      }
+      const order = {
+        id: orderId,
+        orderNumber: `SCH-${Date.now().toString().slice(-6)}`,
+        userId: req.userId,
+        items: orderItems,
+        total: parseFloat(total.toFixed(2)),
+        shippingAddress: shippingAddress || {},
+        paymentMethod: 'card',
+        paystackReference: orderId,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      store.orders.push(order);
+      return res.status(201).json({ ...order, paymentUrl: initRes.data.authorization_url });
+    } catch (err) {
+      return res.status(500).json({ message: 'Card payment error', error: err.message });
     }
   }
 
