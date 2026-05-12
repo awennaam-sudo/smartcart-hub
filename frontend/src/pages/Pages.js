@@ -43,15 +43,32 @@ export function CheckoutPage() {
           <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
             <h3 style={{ fontFamily: 'var(--serif)', marginBottom: 20 }}>Payment Method</h3>
             {[{ id: 'card', label: '💳 Credit / Debit Card' }, { id: 'mobile_money', label: '📱 Mobile Money' }, { id: 'cod', label: '💵 Cash on Delivery' }].map(p => (
-              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: `1px solid ₵{payment === p.id ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 'var(--radius)', marginBottom: 10, background: payment === p.id ? 'var(--gold-dim)' : 'transparent', cursor: 'pointer', color: 'var(--text)', fontSize: 14 }}>
+              <label key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: `1px solid ${payment === p.id ? 'var(--gold)' : 'var(--border)'}`, borderRadius: 'var(--radius)', marginBottom: 10, background: payment === p.id ? 'var(--gold-dim)' : 'transparent', cursor: 'pointer', color: 'var(--text)', fontSize: 14 }}>
                 <input type="radio" name="payment" value={p.id} checked={payment === p.id} onChange={() => setPayment(p.id)} style={{ width: 'auto', accentColor: 'var(--gold)' }} />
                 {p.label}
               </label>
             ))}
           </div>
+          {payment === 'mobile_money' && (
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
+                <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
+                  <option value="mtn">MTN Mobile Money</option>
+                  <option value="vod">Vodafone Cash</option>
+                  <option value="tgo">AirtelTigo Money</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
+                <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
+              </div>
+            </div>
+          )}
           {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
           <button className="btn btn-gold" type="submit" disabled={loading || items.length === 0} style={{ width: '100%', padding: '14px', fontSize: 15 }}>
-            {loading ? 'Placing order...' : `Place Order — ₵₵{(total + shipping).toFixed(2)}`}
+            {loading ? 'Placing order...' : `Place Order — ₵{(total + shipping).toFixed(2)}`}
           </button>
         </form>
 
