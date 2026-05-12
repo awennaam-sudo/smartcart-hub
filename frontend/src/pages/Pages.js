@@ -11,6 +11,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const [address, setAddress] = useState({ street: user?.address?.street || '', city: user?.address?.city || '', country: user?.address?.country || '' });
   const [payment, setPayment] = useState('card');
+  const [momoPhone, setMomoPhone] = useState('');
+  const [momoProvider, setMomoProvider] = useState('mtn');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -19,7 +21,7 @@ export function CheckoutPage() {
   const handleOrder = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
     try {
-      const res = await authFetch(`₵{API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment }) });
+      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment, momoPhone, momoProvider }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       clearCart(); navigate('/orders', { state: { newOrder: data } });
@@ -49,7 +51,24 @@ export function CheckoutPage() {
               </label>
             ))}
           </div>
-          {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
+          {payment === 'mobile_money' && (
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
+              <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="vod">Vodafone Cash</option>
+                <option value="tgo">AirtelTigo Money</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
+              <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
+            </div>
+          </div>
+        )}
+        {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
           <button className="btn btn-gold" type="submit" disabled={loading || items.length === 0} style={{ width: '100%', padding: '14px', fontSize: 15 }}>
             {loading ? 'Placing order...' : `Place Order — ₵₵{(total + shipping).toFixed(2)}`}
           </button>
@@ -149,7 +168,24 @@ export function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 16 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="••••••••" required /></div>
-            {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
+            {payment === 'mobile_money' && (
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
+              <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="vod">Vodafone Cash</option>
+                <option value="tgo">AirtelTigo Money</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
+              <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
+            </div>
+          </div>
+        )}
+        {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
             <button className="btn btn-gold" type="submit" disabled={loading} style={{ width: '100%', padding: '13px' }}>{loading ? 'Signing in...' : 'Sign in →'}</button>
           </form>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text3)' }}>No account? <a href="/register" style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>Create one</a></p>
@@ -187,7 +223,24 @@ export function RegisterPage() {
             <div style={{ marginBottom: 14 }}><label>Full name</label><input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Your name" required /></div>
             <div style={{ marginBottom: 14 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="Min. 6 characters" minLength={6} required /></div>
-            {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
+            {payment === 'mobile_money' && (
+          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
+              <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
+                <option value="mtn">MTN Mobile Money</option>
+                <option value="vod">Vodafone Cash</option>
+                <option value="tgo">AirtelTigo Money</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
+              <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
+            </div>
+          </div>
+        )}
+        {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
             <button className="btn btn-gold" type="submit" disabled={loading} style={{ width: '100%', padding: '13px' }}>{loading ? 'Creating account...' : 'Create account →'}</button>
           </form>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text3)' }}>Already have an account? <a href="/login" style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>Sign in</a></p>
@@ -207,7 +260,7 @@ export function AdminPage() {
 
   React.useEffect(() => {
     fetch(`₵{API}/api/stats`).then(r => r.json()).then(setStats);
-    authFetch(`₵{API}/api/orders`).then(r => r.json()).then(d => Array.isArray(d) && setOrders(d));
+    authFetch(`${API}/api/orders`).then(r => r.json()).then(d => Array.isArray(d) && setOrders(d));
     fetch(`₵{API}/api/products`).then(r => r.json()).then(setProducts);
   }, []);
 
