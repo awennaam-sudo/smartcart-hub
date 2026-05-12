@@ -168,21 +168,7 @@ export function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 16 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="••••••••" required /></div>
-            {payment === 'mobile_money' && (
-          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
-              <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
-                <option value="mtn">MTN Mobile Money</option>
-                <option value="vod">Vodafone Cash</option>
-                <option value="tgo">AirtelTigo Money</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
-              <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
-            </div>
+
           </div>
         )}
         {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
@@ -223,21 +209,7 @@ export function RegisterPage() {
             <div style={{ marginBottom: 14 }}><label>Full name</label><input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Your name" required /></div>
             <div style={{ marginBottom: 14 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="Min. 6 characters" minLength={6} required /></div>
-            {payment === 'mobile_money' && (
-          <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
-              <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
-                <option value="mtn">MTN Mobile Money</option>
-                <option value="vod">Vodafone Cash</option>
-                <option value="tgo">AirtelTigo Money</option>
-              </select>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
-              <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
-            </div>
+
           </div>
         )}
         {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
