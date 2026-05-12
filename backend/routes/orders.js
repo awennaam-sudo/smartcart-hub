@@ -116,7 +116,8 @@ router.post('/', requireAuth, async (req, res) => {
       const orderId = uuidv4();
       const callbackUrl = `${process.env.FRONTEND_URL}/orders`;
       const initRes = await initializeCardPayment(user.email, total, orderId, callbackUrl);
-      if (!initRes.status) return res.status(400).json({ message: 'Card payment initiation failed.' });
+      console.log('Paystack card response:', JSON.stringify(initRes));
+      if (!initRes.status) return res.status(400).json({ message: 'Card payment initiation failed.', details: initRes });
       for (const item of items) {
         const product = store.products.find(p => p.id === item.productId);
         product.stock -= item.quantity;
