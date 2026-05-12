@@ -21,7 +21,7 @@ export function CheckoutPage() {
   const handleOrder = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
     try {
-      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment }) });
+      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment, momoPhone, momoProvider }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       clearCart(); navigate('/orders', { state: { newOrder: data } });
