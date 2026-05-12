@@ -11,6 +11,8 @@ export function CheckoutPage() {
   const navigate = useNavigate();
   const [address, setAddress] = useState({ street: user?.address?.street || '', city: user?.address?.city || '', country: user?.address?.country || '' });
   const [payment, setPayment] = useState('card');
+  const [momoPhone, setMomoPhone] = useState('');
+  const [momoProvider, setMomoProvider] = useState('mtn');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
