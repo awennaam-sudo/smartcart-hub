@@ -68,7 +68,7 @@ export function CheckoutPage() {
           )}
           {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
           <button className="btn btn-gold" type="submit" disabled={loading || items.length === 0} style={{ width: '100%', padding: '14px', fontSize: 15 }}>
-            {loading ? 'Placing order...' : `Place Order — ₵{(total + shipping).toFixed(2)}`}
+            {loading ? 'Placing order...' : `Place Order — ${(total + shipping).toFixed(2)}`}
           </button>
         </form>
 
@@ -119,7 +119,7 @@ export function OrdersPage() {
               <div style={{ fontSize: 12, color: 'var(--text3)' }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <span className={`badge ₵{statusColor[o.status] || 'badge-gold'}`} style={{ marginBottom: 6, display: 'block' }}>{o.status}</span>
+              <span className={`badge ${statusColor[o.status] || 'badge-gold'}`} style={{ marginBottom: 6, display: 'block' }}>{o.status}</span>
               <div style={{ fontFamily: 'var(--serif)', fontSize: 20, fontWeight: 700, color: 'var(--gold)' }}>₵{o.total.toFixed(2)}</div>
             </div>
           </div>
@@ -229,7 +229,7 @@ export function AdminPage() {
   }, []);
 
   const updateStatus = async (id, status) => {
-    await authFetch(`/api/orders/₵{id}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
+    await authFetch(`/api/orders/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
     setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
   };
 
@@ -249,7 +249,7 @@ export function AdminPage() {
       <div className="g4" style={{ marginBottom: 32 }}>
         {statItems.map(s => (
           <div key={s.label} style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 20, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ₵{s.color}50, transparent)` }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${s.color}50, transparent)` }} />
             <div style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>{s.label}</div>
             <div style={{ fontFamily: 'var(--serif)', fontSize: 32, fontWeight: 700, color: s.color }}>{s.value}</div>
           </div>
@@ -259,7 +259,7 @@ export function AdminPage() {
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
         {['overview', 'orders', 'products'].map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{ padding: '8px 20px', borderRadius: 40, border: `1px solid ₵{tab === t ? 'var(--gold)' : 'var(--border)'}`, background: tab === t ? 'var(--gold-dim)' : 'transparent', color: tab === t ? 'var(--gold)' : 'var(--text2)', fontFamily: 'var(--font)', fontWeight: 500, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
+          <button key={t} onClick={() => setTab(t)} style={{ padding: '8px 20px', borderRadius: 40, border: `1px solid ${tab === t ? 'var(--gold)' : 'var(--border)'}`, background: tab === t ? 'var(--gold-dim)' : 'transparent', color: tab === t ? 'var(--gold)' : 'var(--text2)', fontFamily: 'var(--font)', fontWeight: 500, fontSize: 13, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 0.15s' }}>
             {t}
           </button>
         ))}
