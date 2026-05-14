@@ -77,41 +77,32 @@ router.post('/', requireAuth, async (req, res) => {
   }
 
   if (paymentMethod === 'mobile_money') {
-    if (!momoPhone || !momoProvider) {
-      return res.status(400).json({ message: 'Mobile Money phone and provider are required' });
-    }
     try {
       const user = store.users.find(u => u.id === req.userId);
-      const chargeRes = await chargeMomo(user.email, total, momoPhone, momoProvider);
-      console.log('Paystack MoMo response:', JSON.stringify(chargeRes));
-      if (!chargeRes.status) {
-        return res.status(400).json({ message: 'Payment initiation failed. Please try again.' });
-      }
+      const orderId = uuidv4();
+      const callbackUrl = `${process.env.FRONTEND_URL}/orders`;
+      const initRes = await initializeCardPayment(user.email, total, orderId, callbackUrl);
+      console.log('Paystack MoMo init response:', JSON.stringify(initRes));
+      if (!initRes.status) return res.status(400).json({ message: 'Payment initiation failed.' });
       for (const item of items) {
         const product = store.products.find(p => p.id === item.productId);
         product.stock -= item.quantity;
       }
       const order = {
-        id: uuidv4(),
+        id: orderId,
         orderNumber: `SCH-${Date.now().toString().slice(-6)}`,
         userId: req.userId,
         items: orderItems,
         total: parseFloat(total.toFixed(2)),
         shippingAddress: shippingAddress || {},
         paymentMethod: 'mobile_money',
-        paystackReference: chargeRes.data?.reference,
+        paystackReference: orderId,
         status: 'pending',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
       store.orders.push(order);
-      const otpRequired = chargeRes.data?.status === 'send_otp';
-      return res.status(201).json({
-        ...order,
-        otpRequired,
-        reference: chargeRes.data?.reference,
-        paystackMessage: chargeRes.data?.display_text || 'Payment prompt sent to your phone.',
-      });
+      return res.status(201).json({ ...order, paymentUrl: initRes.data.authorization_url });
     } catch (err) {
       return res.status(500).json({ message: 'Payment processing error', error: err.message });
     }
