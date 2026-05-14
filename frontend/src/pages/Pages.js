@@ -12,6 +12,9 @@ export function CheckoutPage() {
   const [address, setAddress] = useState({ street: user?.address?.street || '', city: user?.address?.city || '', country: user?.address?.country || '' });
   const [payment, setPayment] = useState('card');
   const [momoPhone, setMomoPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [otpRequired, setOtpRequired] = useState(false);
+  const [paystackRef, setPaystackRef] = useState('');
   const [momoProvider, setMomoProvider] = useState('mtn');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -28,7 +31,15 @@ export function CheckoutPage() {
         clearCart();
         window.location.href = data.paymentUrl;
       } else {
+        if (data.paymentUrl) {
+        clearCart();
+        window.location.href = data.paymentUrl;
+      } else if (data.otpRequired) {
+        setOtpRequired(true);
+        setPaystackRef(data.reference);
+      } else {
         clearCart(); navigate('/orders', { state: { newOrder: data } });
+      }
       }
     } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
@@ -71,6 +82,22 @@ export function CheckoutPage() {
                 <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
                 <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
               </div>
+            </div>
+          )}
+          {otpRequired && (
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 8 }}>Enter OTP</h3>
+              <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>A code was sent to your phone. Enter it below to complete payment.</p>
+              <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP code" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14, marginBottom: 12 }} />
+              <button type="button" className="btn btn-gold" style={{ width: '100%', padding: '12px' }} onClick={async () => {
+                setLoading(true); setError('');
+                try {
+                  const res = await authFetch(`${API}/api/orders/verify-otp`, { method: 'POST', body: JSON.stringify({ reference: paystackRef, otp }) });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message);
+                  clearCart(); navigate('/orders', { state: { newOrder: data } });
+                } catch(err) { setError(err.message); } finally { setLoading(false); }
+              }}>{loading ? 'Verifying...' : 'Confirm Payment'}</button>
             </div>
           )}
           {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
@@ -173,7 +200,23 @@ export function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div style={{ marginBottom: 16 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="••••••••" required /></div>
-            {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
+            {otpRequired && (
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 8 }}>Enter OTP</h3>
+              <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>A code was sent to your phone. Enter it below to complete payment.</p>
+              <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP code" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14, marginBottom: 12 }} />
+              <button type="button" className="btn btn-gold" style={{ width: '100%', padding: '12px' }} onClick={async () => {
+                setLoading(true); setError('');
+                try {
+                  const res = await authFetch(`${API}/api/orders/verify-otp`, { method: 'POST', body: JSON.stringify({ reference: paystackRef, otp }) });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message);
+                  clearCart(); navigate('/orders', { state: { newOrder: data } });
+                } catch(err) { setError(err.message); } finally { setLoading(false); }
+              }}>{loading ? 'Verifying...' : 'Confirm Payment'}</button>
+            </div>
+          )}
+          {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
             <button className="btn btn-gold" type="submit" disabled={loading} style={{ width: '100%', padding: '13px' }}>{loading ? 'Signing in...' : 'Sign in →'}</button>
           </form>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text3)' }}>No account? <a href="/register" style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>Create one</a></p>
@@ -211,7 +254,23 @@ export function RegisterPage() {
             <div style={{ marginBottom: 14 }}><label>Full name</label><input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Your name" required /></div>
             <div style={{ marginBottom: 14 }}><label>Email</label><input type="email" value={form.email} onChange={e => setForm(f => ({...f, email: e.target.value}))} placeholder="you@example.com" required /></div>
             <div style={{ marginBottom: 24 }}><label>Password</label><input type="password" value={form.password} onChange={e => setForm(f => ({...f, password: e.target.value}))} placeholder="Min. 6 characters" minLength={6} required /></div>
-            {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
+            {otpRequired && (
+            <div style={{ background: 'var(--panel)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 8 }}>Enter OTP</h3>
+              <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>A code was sent to your phone. Enter it below to complete payment.</p>
+              <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP code" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14, marginBottom: 12 }} />
+              <button type="button" className="btn btn-gold" style={{ width: '100%', padding: '12px' }} onClick={async () => {
+                setLoading(true); setError('');
+                try {
+                  const res = await authFetch(`${API}/api/orders/verify-otp`, { method: 'POST', body: JSON.stringify({ reference: paystackRef, otp }) });
+                  const data = await res.json();
+                  if (!res.ok) throw new Error(data.message);
+                  clearCart(); navigate('/orders', { state: { newOrder: data } });
+                } catch(err) { setError(err.message); } finally { setLoading(false); }
+              }}>{loading ? 'Verifying...' : 'Confirm Payment'}</button>
+            </div>
+          )}
+          {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '10px 14px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
             <button className="btn btn-gold" type="submit" disabled={loading} style={{ width: '100%', padding: '13px' }}>{loading ? 'Creating account...' : 'Create account →'}</button>
           </form>
           <p style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: 'var(--text3)' }}>Already have an account? <a href="/login" style={{ color: 'var(--gold)', textDecoration: 'none', fontWeight: 600 }}>Sign in</a></p>
