@@ -83,6 +83,7 @@ router.post('/', requireAuth, async (req, res) => {
     try {
       const user = store.users.find(u => u.id === req.userId);
       const chargeRes = await chargeMomo(user.email, total, momoPhone, momoProvider);
+      console.log('Paystack MoMo response:', JSON.stringify(chargeRes));
       if (!chargeRes.status) {
         return res.status(400).json({ message: 'Payment initiation failed. Please try again.' });
       }
@@ -104,7 +105,13 @@ router.post('/', requireAuth, async (req, res) => {
         updatedAt: new Date().toISOString(),
       };
       store.orders.push(order);
-      return res.status(201).json({ ...order, paystackMessage: chargeRes.data?.display_text || 'Payment prompt sent to your phone. Please approve it.' });
+      const otpRequired = chargeRes.data?.status === 'send_otp';
+      return res.status(201).json({
+        ...order,
+        otpRequired,
+        reference: chargeRes.data?.reference,
+        paystackMessage: chargeRes.data?.display_text || 'Payment prompt sent to your phone.',
+      });
     } catch (err) {
       return res.status(500).json({ message: 'Payment processing error', error: err.message });
     }
@@ -160,6 +167,38 @@ router.post('/', requireAuth, async (req, res) => {
   };
   store.orders.push(order);
   res.status(201).json(order);
+});
+
+router.post('/verify-otp', requireAuth, async (req, res) => {
+  const { reference, otp } = req.body;
+  const body = JSON.stringify({ reference, otp });
+  const options = {
+    hostname: 'api.paystack.co',
+    path: '/charge/submit_otp',
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  };
+  const paystackReq = https.request(options, (paystackRes) => {
+    let data = '';
+    paystackRes.on('data', chunk => data += chunk);
+    paystackRes.on('end', () => {
+      const result = JSON.parse(data);
+      console.log('OTP verify response:', JSON.stringify(result));
+      if (result.data?.status === 'success') {
+        const order = store.orders.find(o => o.paystackReference === reference);
+        if (order) { order.status = 'paid'; order.updatedAt = new Date().toISOString(); }
+        res.json({ message: 'Payment successful', order });
+      } else {
+        res.status(400).json({ message: result.data?.display_text || 'OTP verification failed' });
+      }
+    });
+  });
+  paystackReq.on('error', err => res.status(500).json({ message: err.message }));
+  paystackReq.write(body);
+  paystackReq.end();
 });
 
 router.get('/mine', requireAuth, (req, res) => {
