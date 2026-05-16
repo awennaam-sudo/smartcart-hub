@@ -76,7 +76,7 @@ export default function HomePage() {
         <div className="page">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'var(--border)' }}>
             {[
-              { icon: '🚚', title: 'Free Shipping', desc: 'On orders over $100' },
+              { icon: '🚚', title: 'Free Delivery Fee', desc: 'On orders over $100' },
               { icon: '↩', title: 'Easy Returns', desc: '30-day return policy' },
               { icon: '🔒', title: 'Secure Payment', desc: 'SSL encrypted checkout' },
               { icon: '✦', title: 'Premium Quality', desc: 'Curated luxury pieces' },

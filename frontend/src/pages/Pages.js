@@ -121,7 +121,7 @@ export function CheckoutPage() {
           ))}
           <div className="gold-line" />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 8 }}><span style={{ color: 'var(--text3)' }}>Subtotal</span><span>₵{total.toFixed(2)}</span></div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 14 }}><span style={{ color: 'var(--text3)' }}>Shipping</span><span style={{ color: 'var(--green)' }}>{shipping === 0 ? 'Free' : `₵${shipping.toFixed(2)}`}</span></div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, marginBottom: 14 }}><span style={{ color: 'var(--text3)' }}>Delivery Fee</span><span style={{ color: 'var(--green)' }}>{shipping === 0 ? 'Free' : `₵${shipping.toFixed(2)}`}</span></div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 16 }}>Total</span><span style={{ fontFamily: 'var(--serif)', fontWeight: 700, fontSize: 20, color: 'var(--gold)' }}>₵{(total + shipping).toFixed(2)}</span></div>
         </div>
       </div>

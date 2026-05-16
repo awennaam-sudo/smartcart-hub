@@ -82,7 +82,7 @@ export default function ProductPage() {
 
           {/* Info pills */}
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            {['Free shipping over ₵100', '30-day returns', 'Authentic guarantee'].map(f => (
+            {['Free delivery fee over ₵100', '30-day returns', 'Authentic guarantee'].map(f => (
               <span key={f} style={{ fontSize: 12, color: 'var(--text3)', padding: '6px 14px', background: 'var(--bg2)', border: '1px solid var(--border)', borderRadius: 20 }}>✦ {f}</span>
             ))}
           </div>

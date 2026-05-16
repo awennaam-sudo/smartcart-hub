@@ -73,7 +73,7 @@ export default function CartPage() {
             <span>₵{total.toFixed(2)}</span>
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 14 }}>
-            <span style={{ color: 'var(--text2)' }}>Shipping</span>
+            <span style={{ color: 'var(--text2)' }}>Delivery Fee</span>
             <span style={{ color: 'var(--green)' }}>{total >= 100 ? 'Free' : '₵9.99'}</span>
           </div>
           <div className="gold-line" />
