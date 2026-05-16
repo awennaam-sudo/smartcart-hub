@@ -348,7 +348,7 @@ export default function AdminDashboard() {
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <td style={S.td}>
                         <div style={{ fontWeight: 700, color: 'var(--gold)', fontFamily: 'var(--serif)', fontSize: 14 }}>{o.orderNumber}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{o.delivery feeAddress?.city}, {o.delivery feeAddress?.country}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text3)' }}>{o.shippingAddress?.city}, {o.shippingAddress?.country}</div>
                       </td>
                       <td style={{ ...S.td, fontSize: 13, color: 'var(--text2)' }}>{new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                       <td style={S.td}>
