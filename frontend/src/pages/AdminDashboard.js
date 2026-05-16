@@ -47,7 +47,7 @@ export default function AdminDashboard() {
     setLoading(true);
     const [s, p, o] = await Promise.all([
       fetch(`${API}/api/stats`).then(r => r.json()),
-      fetch(`₵{API}/api/products`).then(r => r.json()),
+      fetch(`${API}/api/products`).then(r => r.json()),
       authFetch(`${API}/api/orders`).then(r => r.json()),
     ]);
     setStats(s);
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
   const S = {
     page: { maxWidth: 1200, margin: '0 auto', padding: '36px 32px' },
     tab: (active) => ({
-      padding: '9px 22px', borderRadius: 40, border: `1px solid ₵{active ? 'var(--gold)' : 'var(--border)'}`,
+      padding: '9px 22px', borderRadius: 40, border: `1px solid ${active ? 'var(--gold)' : 'var(--border)'}`,
       background: active ? 'var(--gold-dim)' : 'transparent',
       color: active ? 'var(--gold)' : 'var(--text2)',
       fontFamily: 'var(--font)', fontWeight: 500, fontSize: 13,
@@ -159,13 +159,13 @@ export default function AdminDashboard() {
       {/* ── Stats ── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0,1fr))', gap: 16, marginBottom: 32 }}>
         {[
-          { label: 'Total Revenue', value: `$₵{totalRevenue.toFixed(2)}`, color: 'var(--gold)',  sub: `₵{orders.length} orders total`, icon: '💰' },
-          { label: 'Products',      value: products.length,               color: 'var(--gold2)', sub: `₵{lowStock} low stock items`,  icon: '📦' },
-          { label: 'Orders',        value: orders.length,                 color: 'var(--green)', sub: `₵{orders.filter(o=>o.status==='pending').length} pending`,      icon: '🛒' },
+          { label: 'Total Revenue', value: `$${totalRevenue.toFixed(2)}`, color: 'var(--gold)',  sub: `${orders.length} orders total`, icon: '💰' },
+          { label: 'Products',      value: products.length,               color: 'var(--gold2)', sub: `${lowStock} low stock items`,  icon: '📦' },
+          { label: 'Orders',        value: orders.length,                 color: 'var(--green)', sub: `${orders.filter(o=>o.status==='pending').length} pending`,      icon: '🛒' },
           { label: 'Customers',     value: stats?.customers ?? 0,         color: 'var(--text2)', sub: 'registered accounts',          icon: '👤' },
         ].map((s, i) => (
           <div key={i} style={S.statCard(s.color)}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ₵{s.color}60, transparent)` }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${s.color}60, transparent)` }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <div style={{ fontSize: 11, color: 'var(--text3)', letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 600 }}>{s.label}</div>
               <span style={{ fontSize: 20 }}>{s.icon}</span>
@@ -180,8 +180,8 @@ export default function AdminDashboard() {
       <div style={{ display: 'flex', gap: 8, marginBottom: 28, flexWrap: 'wrap' }}>
         {[
           { id: 'overview', label: '📊 Overview' },
-          { id: 'products', label: `📦 Products (₵{products.length})` },
-          { id: 'orders',   label: `🛒 Orders (₵{orders.length})` },
+          { id: 'products', label: `📦 Products (${products.length})` },
+          { id: 'orders',   label: `🛒 Orders (${orders.length})` },
         ].map(t => (
           <button key={t.id} style={S.tab(tab === t.id)} onClick={() => setTab(t.id)}>{t.label}</button>
         ))}
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--serif)' }}>₵{o.total.toFixed(2)}</span>
-                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: 0.8, background: sc.bg, color: sc.color, border: `1px solid ₵{sc.border}` }}>{o.status}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: 0.8, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>{o.status}</span>
                   </div>
                 </div>
               );
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                 <img src={p.image} alt={p.name} style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border)', flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
-                  <div style={{ fontSize: 11, color: p.stock === 0 ? 'var(--red)' : 'var(--amber)', marginTop: 2 }}>{p.stock === 0 ? 'Out of stock' : `Only ₵{p.stock} left`}</div>
+                  <div style={{ fontSize: 11, color: p.stock === 0 ? 'var(--red)' : 'var(--amber)', marginTop: 2 }}>{p.stock === 0 ? 'Out of stock' : `Only ${p.stock} left`}</div>
                 </div>
                 <button className="btn btn-outline" style={{ fontSize: 11, padding: '5px 12px', flexShrink: 0 }} onClick={() => openEdit(p)}>Edit</button>
               </div>
@@ -245,7 +245,7 @@ export default function AdminDashboard() {
                     <div style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 8, letterSpacing: 0.5 }}>{cat}</div>
                     <div style={{ fontFamily: 'var(--serif)', fontSize: 26, fontWeight: 700, color: 'var(--gold)', lineHeight: 1, marginBottom: 8 }}>{count}</div>
                     <div style={{ height: 3, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', width: `₵{pct}%`, background: 'linear-gradient(90deg, var(--gold), var(--gold2))', borderRadius: 2 }} />
+                      <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg, var(--gold), var(--gold2))', borderRadius: 2 }} />
                     </div>
                   </div>
                 );
@@ -354,7 +354,7 @@ export default function AdminDashboard() {
                       <td style={S.td}>
                         <div style={{ display: 'flex', gap: 4 }}>
                           {o.items.slice(0, 3).map(item => (
-                            <img key={item.productId} src={item.image} alt={item.name} title={`₵{item.name} ×₵{item.quantity}`} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)' }} />
+                            <img key={item.productId} src={item.image} alt={item.name} title={`${item.name} ×${item.quantity}`} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)' }} />
                           ))}
                           {o.items.length > 3 && <span style={{ width: 32, height: 32, borderRadius: 4, background: 'var(--bg3)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--text3)' }}>+{o.items.length - 3}</span>}
                         </div>
@@ -362,7 +362,7 @@ export default function AdminDashboard() {
                       <td style={{ ...S.td, fontFamily: 'var(--serif)', fontWeight: 700, color: 'var(--gold)', fontSize: 16 }}>₵{o.total.toFixed(2)}</td>
                       <td style={{ ...S.td, fontSize: 12, color: 'var(--text3)', textTransform: 'capitalize' }}>{o.paymentMethod?.replace('_', ' ')}</td>
                       <td style={S.td}>
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: 0.8, background: sc.bg, color: sc.color, border: `1px solid ₵{sc.border}`, whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '4px 10px', borderRadius: 20, textTransform: 'uppercase', letterSpacing: 0.8, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}`, whiteSpace: 'nowrap' }}>
                           {o.status}
                         </span>
                       </td>
@@ -438,7 +438,7 @@ export default function AdminDashboard() {
                   <label style={S.label}>Tags</label>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {['bestseller', 'new', 'sale'].map(tag => (
-                      <label key={tag} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, border: `1px solid ₵{editProduct.tags?.includes(tag) ? 'var(--gold)' : 'var(--border)'}`, background: editProduct.tags?.includes(tag) ? 'var(--gold-dim)' : 'transparent', cursor: 'pointer', fontSize: 13, color: editProduct.tags?.includes(tag) ? 'var(--gold)' : 'var(--text2)', transition: 'all 0.15s' }}>
+                      <label key={tag} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 20, border: `1px solid ${editProduct.tags?.includes(tag) ? 'var(--gold)' : 'var(--border)'}`, background: editProduct.tags?.includes(tag) ? 'var(--gold-dim)' : 'transparent', cursor: 'pointer', fontSize: 13, color: editProduct.tags?.includes(tag) ? 'var(--gold)' : 'var(--text2)', transition: 'all 0.15s' }}>
                         <input type="checkbox" checked={editProduct.tags?.includes(tag)} onChange={e => setEditProduct(p => ({ ...p, tags: e.target.checked ? [...(p.tags||[]), tag] : (p.tags||[]).filter(t => t !== tag) }))} style={{ display: 'none' }} />
                         {tag}
                       </label>
