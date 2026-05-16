@@ -46,9 +46,9 @@ export default function AdminDashboard() {
   const loadAll = async () => {
     setLoading(true);
     const [s, p, o] = await Promise.all([
-      fetch(`₵{API}/api/stats`).then(r => r.json()),
+      fetch(`${API}/api/stats`).then(r => r.json()),
       fetch(`₵{API}/api/products`).then(r => r.json()),
-      authFetch('/api/orders').then(r => r.json()),
+      authFetch(`${API}/api/orders`).then(r => r.json()),
     ]);
     setStats(s);
     setProducts(Array.isArray(p) ? p : []);
@@ -73,12 +73,12 @@ export default function AdminDashboard() {
       if (!payload.name || isNaN(payload.price)) { setFormError('Name and valid price are required.'); return; }
       let res, data;
       if (modal === 'add') {
-        res = await authFetch('/api/products', { method: 'POST', body: JSON.stringify(payload) });
+        res = await authFetch(`${API}/api/products`, { method: 'POST', body: JSON.stringify(payload) });
         data = await res.json();
         if (!res.ok) throw new Error(data.message);
         setProducts(prev => [...prev, data]);
       } else {
-        res = await authFetch(`/api/products/₵{editProduct.id}`, { method: 'PUT', body: JSON.stringify(payload) });
+        res = await authFetch(`${API}/api/products/${editProduct.id}`, { method: 'PUT', body: JSON.stringify(payload) });
         data = await res.json();
         if (!res.ok) throw new Error(data.message);
         setProducts(prev => prev.map(p => p.id === editProduct.id ? data : p));
@@ -90,18 +90,18 @@ export default function AdminDashboard() {
   };
 
   const handleDelete = async (id) => {
-    await authFetch(`/api/products/₵{id}`, { method: 'DELETE' });
+    await authFetch(`${API}/api/products/${id}`, { method: 'DELETE' });
     setProducts(prev => prev.filter(p => p.id !== id));
     setDeleteId(null);
     loadStats();
   };
 
   const handleStatusChange = async (orderId, status) => {
-    await authFetch(`/api/orders/₵{orderId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
+    await authFetch(`${API}/api/orders/${orderId}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
   };
 
-  const loadStats = () => fetch(`₵{API}/api/stats`).then(r => r.json()).then(setStats);
+  const loadStats = () => fetch(`${API}/api/stats`).then(r => r.json()).then(setStats);
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
