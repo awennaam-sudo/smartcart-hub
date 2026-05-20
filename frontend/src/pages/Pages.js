@@ -4,46 +4,29 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-
 export function CheckoutPage() {
   const { items, total, clearCart } = useCart();
   const { user, authFetch } = useAuth();
   const navigate = useNavigate();
-  const [address, setAddress] = useState({ street: user?.address?.street || '', city: user?.address?.city || '', country: user?.address?.country || '' });
+  const [address, setAddress] = useState({ street: user?.address?.street || '', city: user?.address?.city || '', country: user?.address?.country || 'Ghana', phone: '' });
   const [payment, setPayment] = useState('card');
-  const [momoPhone, setMomoPhone] = useState('');
-  const [otp, setOtp] = useState('');
-  const [otpRequired, setOtpRequired] = useState(false);
-  const [paystackRef, setPaystackRef] = useState('');
-  const [momoProvider, setMomoProvider] = useState('mtn');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
   const shipping = total >= 100 ? 0 : 9.99;
-
   const handleOrder = async (e) => {
     e.preventDefault(); setLoading(true); setError('');
     try {
-      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment, momoPhone, momoProvider }) });
+      const res = await authFetch(`${API}/api/orders`, { method: 'POST', body: JSON.stringify({ items: items.map(i => ({ productId: i.productId, quantity: i.quantity })), shippingAddress: address, paymentMethod: payment }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
       if (data.paymentUrl) {
         clearCart();
         window.location.href = data.paymentUrl;
       } else {
-        if (data.paymentUrl) {
-        clearCart();
-        window.location.href = data.paymentUrl;
-      } else if (data.otpRequired) {
-        setOtpRequired(true);
-        setPaystackRef(data.reference);
-      } else {
         clearCart(); navigate('/orders', { state: { newOrder: data } });
-      }
       }
     } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
-
   return (
     <div className="page">
       <span className="eyebrow">Almost there</span>
@@ -51,8 +34,9 @@ export function CheckoutPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 36 }}>
         <form onSubmit={handleOrder}>
           <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
-            <h3 style={{ fontFamily: 'var(--serif)', marginBottom: 20 }}>Shipping Address</h3>
-            <div style={{ marginBottom: 14 }}><label>Street</label><input required value={address.street} onChange={e => setAddress(a => ({...a, street: e.target.value}))} placeholder="123 Main Street"/></div>
+            <h3 style={{ fontFamily: 'var(--serif)', marginBottom: 20 }}>Delivery Details</h3>
+            <div style={{ marginBottom: 14 }}><label>Street / House Address</label><input required value={address.street} onChange={e => setAddress(a => ({...a, street: e.target.value}))} placeholder="e.g. 12 Ring Road"/></div>
+            <div style={{ marginBottom: 14 }}><label>Phone Number</label><input required value={address.phone} onChange={e => setAddress(a => ({...a, phone: e.target.value}))} placeholder="e.g. 0241234567"/></div>
             <div className="g2">
               <div><label>City</label><input required value={address.city} onChange={e => setAddress(a => ({...a, city: e.target.value}))} placeholder="Accra"/></div>
               <div><label>Country</label><input required value={address.country} onChange={e => setAddress(a => ({...a, country: e.target.value}))} placeholder="Ghana"/></div>
@@ -67,50 +51,15 @@ export function CheckoutPage() {
               </label>
             ))}
           </div>
-          {payment === 'mobile_money' && (
-            <div style={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
-              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 16 }}>Mobile Money Details</h3>
-              <div style={{ marginBottom: 14 }}>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>NETWORK</label>
-                <select value={momoProvider} onChange={e => setMomoProvider(e.target.value)} style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }}>
-                  <option value="mtn">MTN Mobile Money</option>
-                  <option value="vod">Vodafone Cash</option>
-                  <option value="tgo">AirtelTigo Money</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ display: 'block', marginBottom: 6, fontSize: 12, letterSpacing: 1, color: 'var(--text2)' }}>MOBILE MONEY NUMBER</label>
-                <input value={momoPhone} onChange={e => setMomoPhone(e.target.value)} placeholder="e.g. 0241234567" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14 }} />
-              </div>
-            </div>
-          )}
-          {otpRequired && (
-            <div style={{ background: 'var(--panel)', border: '1px solid var(--gold)', borderRadius: 'var(--radius-lg)', padding: 28, marginBottom: 20 }}>
-              <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 8 }}>Enter OTP</h3>
-              <p style={{ fontSize: 13, color: 'var(--text3)', marginBottom: 16 }}>A code was sent to your phone. Enter it below to complete payment.</p>
-              <input value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter OTP code" style={{ width: '100%', padding: '10px 14px', background: 'var(--input)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 14, marginBottom: 12 }} />
-              <button type="button" className="btn btn-gold" style={{ width: '100%', padding: '12px' }} onClick={async () => {
-                setLoading(true); setError('');
-                try {
-                  const res = await authFetch(`${API}/api/orders/verify-otp`, { method: 'POST', body: JSON.stringify({ reference: paystackRef, otp }) });
-                  const data = await res.json();
-                  if (!res.ok) throw new Error(data.message);
-                  clearCart(); navigate('/orders', { state: { newOrder: data } });
-                } catch(err) { setError(err.message); } finally { setLoading(false); }
-              }}>{loading ? 'Verifying...' : 'Confirm Payment'}</button>
-            </div>
-          )}
           {error && <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(224,92,92,0.25)', borderRadius: 'var(--radius)', padding: '12px 16px', color: 'var(--red)', fontSize: 13, marginBottom: 16 }}>⚠ {error}</div>}
           <button className="btn btn-gold" type="submit" disabled={loading || items.length === 0} style={{ width: '100%', padding: '14px', fontSize: 15 }}>
-            {loading ? 'Placing order...' : `Place Order — ${(total + shipping).toFixed(2)}`}
+            {loading ? 'Processing...' : `Place Order — ₵${(total + shipping).toFixed(2)}`}
           </button>
         </form>
-
-        {/* Summary */}
         <div style={{ background: 'var(--panel)', border: '1px solid var(--border2)', borderRadius: 'var(--radius-lg)', padding: 24, height: 'fit-content' }}>
-          <h3 style={{ fontFamily: 'var(--serif)', marginBottom: 16 }}>Your items</h3>
+          <h3 style={{ fontFamily: 'var(--serif)', fontSize: 18, marginBottom: 20 }}>Your items</h3>
           {items.map(i => (
-            <div key={i.productId} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+            <div key={i.productId} style={{ display: 'flex', gap: 12, marginBottom: 16, alignItems: 'center' }}>
               <img src={i.image} alt={i.name} style={{ width: 52, height: 52, objectFit: 'cover', borderRadius: 6, border: '1px solid var(--border)' }} />
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 500 }}>{i.name}</div>
