@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const CATEGORIES = ['Clothing', 'Bags', 'Accessories', 'Jewellery', 'Footwear', 'Other'];
-const STATUSES = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
+const STATUSES = ['pending', 'processing', 'paid', 'shipped', 'delivered', 'cancelled'];
 
 const STATUS_COLOR = {
   pending:    { bg: 'rgba(201,168,76,0.12)',  color: '#c9a84c', border: 'rgba(201,168,76,0.3)'  },
