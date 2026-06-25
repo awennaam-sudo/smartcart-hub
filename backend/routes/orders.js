@@ -2,25 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
 const https = require('https');
-const store = require('../data/store');
+const { pool } = require('../data/db');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 
-function chargeMomo(email, amount, phone, provider) {
+function initializePayment(email, amount, orderId, callbackUrl) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
-      email,
-      amount: Math.round(amount * 100),
-      currency: 'GHS',
-      mobile_money: { phone, provider },
+      email, amount: Math.round(amount * 100), currency: 'GHS',
+      reference: orderId, callback_url: callbackUrl,
     });
     const options = {
-      hostname: 'api.paystack.co',
-      path: '/charge',
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      hostname: 'api.paystack.co', path: '/transaction/initialize', method: 'POST',
+      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`, 'Content-Type': 'application/json' },
     };
     const req = https.request(options, (res) => {
       let data = '';
@@ -33,189 +26,103 @@ function chargeMomo(email, amount, phone, provider) {
   });
 }
 
-function initializeCardPayment(email, amount, orderId, callbackUrl) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      email,
-      amount: Math.round(amount * 100),
-      currency: 'GHS',
-      reference: orderId,
-      callback_url: callbackUrl,
-    });
-    const options = {
-      hostname: 'api.paystack.co',
-      path: '/transaction/initialize',
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-        'Content-Type': 'application/json',
-      },
-    };
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve(JSON.parse(data)));
-    });
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
-
+// POST /api/orders
 router.post('/', requireAuth, async (req, res) => {
-  const { items, shippingAddress, paymentMethod, momoPhone, momoProvider } = req.body;
+  const { items, shippingAddress, paymentMethod } = req.body;
   if (!items || items.length === 0) return res.status(400).json({ message: 'No items in order' });
 
-  let total = 0;
-  const orderItems = [];
-  for (const item of items) {
-    const product = store.products.find(p => p.id === item.productId);
-    if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` });
-    if (product.stock < item.quantity) return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
-    total += product.price * item.quantity;
-    orderItems.push({ productId: product.id, name: product.name, price: product.price, quantity: item.quantity, image: product.image });
-  }
+  try {
+    let total = 0;
+    const orderItems = [];
 
-  if (paymentMethod === 'mobile_money') {
-    try {
-      const user = store.users.find(u => u.id === req.userId);
-      const orderId = uuidv4();
+    for (const item of items) {
+      const [[product]] = await pool.query('SELECT * FROM products WHERE id = ?', [item.productId]);
+      if (!product) return res.status(404).json({ message: `Product not found: ${item.productId}` });
+      if (product.stock < item.quantity) return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
+      total += product.price * item.quantity;
+      orderItems.push({ productId: product.id, name: product.name, price: product.price, quantity: item.quantity, image: product.image });
+    }
+
+    // Deduct stock
+    for (const item of items) {
+      await pool.query('UPDATE products SET stock = stock - ? WHERE id = ?', [item.quantity, item.productId]);
+    }
+
+    const orderId = uuidv4();
+    const orderNumber = `SCH-${Date.now().toString().slice(-6)}`;
+
+    if (paymentMethod === 'card' || paymentMethod === 'mobile_money') {
       const callbackUrl = `${process.env.FRONTEND_URL}/orders`;
-      const initRes = await initializeCardPayment(user.email, total, orderId, callbackUrl);
-      console.log('Paystack MoMo init response:', JSON.stringify(initRes));
+      const [[user]] = await pool.query('SELECT * FROM users WHERE id = ?', [req.userId]);
+      const initRes = await initializePayment(user.email, total, orderId, callbackUrl);
+      console.log('Paystack response:', JSON.stringify(initRes));
       if (!initRes.status) return res.status(400).json({ message: 'Payment initiation failed.' });
-      for (const item of items) {
-        const product = store.products.find(p => p.id === item.productId);
-        product.stock -= item.quantity;
-      }
-      const order = {
-        id: orderId,
-        orderNumber: `SCH-${Date.now().toString().slice(-6)}`,
-        userId: req.userId,
-        items: orderItems,
-        total: parseFloat(total.toFixed(2)),
-        shippingAddress: shippingAddress || {},
-        paymentMethod: 'mobile_money',
-        paystackReference: orderId,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      store.orders.push(order);
-      return res.status(201).json({ ...order, paymentUrl: initRes.data.authorization_url });
-    } catch (err) {
-      return res.status(500).json({ message: 'Payment processing error', error: err.message });
+
+      await pool.query(
+        'INSERT INTO orders (id, orderNumber, userId, items, total, shippingAddress, paymentMethod, paystackReference, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [orderId, orderNumber, req.userId, JSON.stringify(orderItems), parseFloat(total.toFixed(2)),
+         JSON.stringify(shippingAddress || {}), paymentMethod, orderId, 'pending']
+      );
+      return res.status(201).json({ id: orderId, orderNumber, paymentUrl: initRes.data.authorization_url });
     }
+
+    // Cash on delivery
+    await pool.query(
+      'INSERT INTO orders (id, orderNumber, userId, items, total, shippingAddress, paymentMethod, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [orderId, orderNumber, req.userId, JSON.stringify(orderItems), parseFloat(total.toFixed(2)),
+       JSON.stringify(shippingAddress || {}), paymentMethod || 'cod', 'pending']
+    );
+    const [[order]] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
+    res.status(201).json({ ...order, items: JSON.parse(order.items), shippingAddress: JSON.parse(order.shippingAddress) });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
+});
 
-  if (paymentMethod === 'card') {
-    try {
-      const user = store.users.find(u => u.id === req.userId);
-      const orderId = uuidv4();
-      const callbackUrl = `${process.env.FRONTEND_URL}/orders`;
-      const initRes = await initializeCardPayment(user.email, total, orderId, callbackUrl);
-      console.log('Paystack card response:', JSON.stringify(initRes));
-      if (!initRes.status) return res.status(400).json({ message: 'Card payment initiation failed.', details: initRes });
-      for (const item of items) {
-        const product = store.products.find(p => p.id === item.productId);
-        product.stock -= item.quantity;
-      }
-      const order = {
-        id: orderId,
-        orderNumber: `SCH-${Date.now().toString().slice(-6)}`,
-        userId: req.userId,
-        items: orderItems,
-        total: parseFloat(total.toFixed(2)),
-        shippingAddress: shippingAddress || {},
-        paymentMethod: 'card',
-        paystackReference: orderId,
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      store.orders.push(order);
-      return res.status(201).json({ ...order, paymentUrl: initRes.data.authorization_url });
-    } catch (err) {
-      return res.status(500).json({ message: 'Card payment error', error: err.message });
-    }
+// GET /api/orders/mine
+router.get('/mine', requireAuth, async (req, res) => {
+  try {
+    const [orders] = await pool.query('SELECT * FROM orders WHERE userId = ? ORDER BY createdAt DESC', [req.userId]);
+    res.json(orders.map(o => ({ ...o, items: JSON.parse(o.items), shippingAddress: JSON.parse(o.shippingAddress) })));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
+});
 
-  for (const item of items) {
-    const product = store.products.find(p => p.id === item.productId);
-    product.stock -= item.quantity;
+// GET /api/orders — admin
+router.get('/', requireAdmin, async (req, res) => {
+  try {
+    const [orders] = await pool.query('SELECT * FROM orders ORDER BY createdAt DESC');
+    res.json(orders.map(o => ({ ...o, items: JSON.parse(o.items), shippingAddress: JSON.parse(o.shippingAddress) })));
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  const order = {
-    id: uuidv4(),
-    orderNumber: `SCH-${Date.now().toString().slice(-6)}`,
-    userId: req.userId,
-    items: orderItems,
-    total: parseFloat(total.toFixed(2)),
-    shippingAddress: shippingAddress || {},
-    paymentMethod: paymentMethod || 'cash',
-    status: 'pending',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  store.orders.push(order);
-  res.status(201).json(order);
 });
 
-router.post('/verify-otp', requireAuth, async (req, res) => {
-  const { reference, otp } = req.body;
-  const body = JSON.stringify({ reference, otp });
-  const options = {
-    hostname: 'api.paystack.co',
-    path: '/charge/submit_otp',
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-      'Content-Type': 'application/json',
-    },
-  };
-  const paystackReq = https.request(options, (paystackRes) => {
-    let data = '';
-    paystackRes.on('data', chunk => data += chunk);
-    paystackRes.on('end', () => {
-      const result = JSON.parse(data);
-      console.log('OTP verify response:', JSON.stringify(result));
-      if (result.data?.status === 'success') {
-        const order = store.orders.find(o => o.paystackReference === reference);
-        if (order) { order.status = 'paid'; order.updatedAt = new Date().toISOString(); }
-        res.json({ message: 'Payment successful', order });
-      } else {
-        res.status(400).json({ message: result.data?.display_text || 'OTP verification failed' });
-      }
-    });
-  });
-  paystackReq.on('error', err => res.status(500).json({ message: err.message }));
-  paystackReq.write(body);
-  paystackReq.end();
+// PUT /api/orders/:id/status — admin
+router.put('/:id/status', requireAdmin, async (req, res) => {
+  try {
+    await pool.query('UPDATE orders SET status = ? WHERE id = ?', [req.body.status, req.params.id]);
+    const [[order]] = await pool.query('SELECT * FROM orders WHERE id = ?', [req.params.id]);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+    res.json({ ...order, items: JSON.parse(order.items), shippingAddress: JSON.parse(order.shippingAddress) });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-router.get('/mine', requireAuth, (req, res) => {
-  const myOrders = store.orders.filter(o => o.userId === req.userId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.json(myOrders);
-});
-
-router.get('/', requireAdmin, (req, res) => {
-  const sorted = [...store.orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  res.json(sorted);
-});
-
-router.put('/:id/status', requireAdmin, (req, res) => {
-  const order = store.orders.find(o => o.id === req.params.id);
-  if (!order) return res.status(404).json({ message: 'Order not found' });
-  order.status = req.body.status;
-  order.updatedAt = new Date().toISOString();
-  res.json(order);
-});
-
-router.get('/stats/summary', requireAdmin, (req, res) => {
-  const totalRevenue = store.orders.reduce((sum, o) => sum + o.total, 0);
-  const totalOrders = store.orders.length;
-  const totalCustomers = new Set(store.orders.map(o => o.userId)).size;
-  const totalProducts = store.products.length;
-  res.json({ totalRevenue: parseFloat(totalRevenue.toFixed(2)), totalOrders, totalCustomers, totalProducts });
+// GET /api/orders/stats/summary — admin
+router.get('/stats/summary', requireAdmin, async (req, res) => {
+  try {
+    const [[{ totalRevenue }]] = await pool.query('SELECT COALESCE(SUM(total), 0) as totalRevenue FROM orders');
+    const [[{ totalOrders }]] = await pool.query('SELECT COUNT(*) as totalOrders FROM orders');
+    const [[{ totalCustomers }]] = await pool.query('SELECT COUNT(DISTINCT userId) as totalCustomers FROM orders');
+    const [[{ totalProducts }]] = await pool.query('SELECT COUNT(*) as totalProducts FROM products');
+    res.json({ totalRevenue: parseFloat(totalRevenue).toFixed(2), totalOrders, totalCustomers, totalProducts });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
